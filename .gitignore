@@ -1,0 +1,41 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Build output
+/bin/
+/dist/
+
+# Go workspace
+go.work
+go.work.sum
+vendor/
+
+# Environment & secrets
+.env
+.local.env
+local.env
+*.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test & coverage
+*.test
+coverage.out
+coverage.html
+
+# Debug
+__debug_bin*
+*.log
