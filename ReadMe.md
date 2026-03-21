@@ -12,3 +12,4 @@ export CONFIG_PATH=./config/local.yaml
 go run ./cmd/shortener
 
 go get "github.com/mattn/go-sqlite3"
+go get github.com/go-chi/chi/v5

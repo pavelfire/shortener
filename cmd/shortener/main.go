@@ -6,6 +6,10 @@ import (
 	"shortener/internal/config"
 	"shortener/internal/lib/logger/sl"
 	"shortener/internal/storage/sqlite"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	mwLogger "shortener/internal/http-server/middleware/logger"
 )
 
 const (
@@ -27,19 +31,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	id, err := storage.SaveURL("https://www.google.com", "google")
-	if err != nil {
-		log.Error("failed to save url", sl.Err(err))
-		os.Exit(1)
-	}
-
-	id, err = storage.SaveURL("https://www.google.com", "google")
-	if err != nil {
-		log.Error("failed to save url", sl.Err(err))
-		os.Exit(1)
-	}
-
-	log.Info("url saved", "id", id)
+	router := chi.NewRouter()
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.Logger)
+	router.Use(mwLogger.New(log))
+	_ = storage
 
 	//TODO: init router: chi, "chi render"
 	//TODO: start server
