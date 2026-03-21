@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"shortener/internal/config"
@@ -16,7 +15,7 @@ const (
 func main() {
 	cfg := config.MustLoad()
 
-	log:=setupLogger(cfg.Env)
+	log := setupLogger(cfg.Env)
 	log.Info("starting shortener", "env", cfg.Env)
 	log.Debug("debug messages are enabled")
 	//TODO: init storage sqlite
