@@ -39,3 +39,4 @@ coverage.html
 # Debug
 __debug_bin*
 *.log
+storage/storage.db
