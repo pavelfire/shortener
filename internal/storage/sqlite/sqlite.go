@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"shortener/internal/storage"
@@ -61,4 +62,39 @@ func (s *Storage) SaveURL(urlToSave string, alias string) (int64, error) {
 	}
 
 	return id, nil
+}
+
+func (s *Storage) GetURL(alias string) (string, error) {
+	const op = "storage.sqlite.GetURL"
+
+	stmt, err := s.db.Prepare("SELECT url FROM url WHERE alias = ?")
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	var resURL string
+
+	err = stmt.QueryRow(alias).Scan(&resURL)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", storage.ErrURLNotFound
+	}
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+	return resURL, nil
+}
+
+func (s *Storage) DeleteURL(alias string) error {
+	const op = "storage.sqlite.DeleteURL"
+
+	stmt, err := s.db.Prepare("DELETE FROM url WHERE alias = ?")
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	_, err = stmt.Exec(alias)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
 }
