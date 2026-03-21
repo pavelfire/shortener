@@ -34,11 +34,12 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
-	router.Use(middleware.Logger)
+	// router.Use(middleware.Logger)
 	router.Use(mwLogger.New(log))
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
 	_ = storage
 
-	//TODO: init router: chi, "chi render"
 	//TODO: start server
 }
 
