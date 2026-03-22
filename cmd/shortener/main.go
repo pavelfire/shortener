@@ -2,6 +2,7 @@ package main
 
 import (
 	"log/slog"
+	"net/http"
 	"os"
 	"shortener/internal/config"
 	"shortener/internal/lib/logger/sl"
@@ -10,9 +11,10 @@ import (
 	mwLogger "shortener/internal/http-server/middleware/logger"
 	slogpretty "shortener/internal/lib/logger/handlers/slogpretty"
 
+	"shortener/internal/http-server/handlers/url/save"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"shortener/internal/http-server/handlers/url/save"
 )
 
 const (
@@ -43,9 +45,23 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Post("/url", save.New(log, storage))
-	_ = storage
+	log.Info("starting server", slog.String("address", cfg.HTTPServer.Address))
 
-	//TODO: start server
+	srv := &http.Server{
+		Addr:         cfg.HTTPServer.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to start server", sl.Err(err))
+		os.Exit(1)
+	}
+	log.Info("server stopped")
+
+	_ = storage
 }
 
 func setupLogger(env string) *slog.Logger {
