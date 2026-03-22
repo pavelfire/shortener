@@ -26,10 +26,14 @@ type Response struct {
 }
 
 // TODO: move to config if needed
-const aliasLength = 6
+const (
+	aliasLength  = 6
+	maxAliasRetries = 10
+)
 
 type URLSaver interface {
 	SaveURL(urlToSave string, alias string) (int64, error)
+	GetURL(alias string) (string, error)
 }
 
 func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
@@ -60,9 +64,27 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 			return
 		}
 
-		alias:= req.Alias
-		if alias==""{
-			alias=random.NewRandomString(aliasLength)
+		alias := req.Alias
+		if alias == "" {
+			for i := 0; i < maxAliasRetries; i++ {
+				alias = random.NewRandomString(aliasLength)
+				_, err := urlSaver.GetURL(alias)
+				if errors.Is(err, storage.ErrURLNotFound) {
+					break // алиас свободен
+				}
+				if err != nil {
+					log.Error("failed to check alias", sl.Err(err))
+					render.JSON(w, r, resp.Error("failed to check alias"))
+					return
+				}
+				// алиас уже занят, перегенерируем
+				alias = ""
+			}
+			if alias == "" {
+				log.Error("failed to generate unique alias after retries")
+				render.JSON(w, r, resp.Error("failed to generate unique alias"))
+				return
+			}
 		}
 
 		id, err:=urlSaver.SaveURL(req.URL, alias)
