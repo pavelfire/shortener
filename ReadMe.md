@@ -13,3 +13,7 @@ go run ./cmd/shortener
 
 go get "github.com/mattn/go-sqlite3"
 go get github.com/go-chi/chi/v5
+go get github.com/go-chi/render
+go get github.com/go-playground/validator/v10
+
+go mod tidy
