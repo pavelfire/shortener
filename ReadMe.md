@@ -25,3 +25,9 @@ curl -X POST http://localhost:8082/url \
   curl -X POST http://localhost:8082/url \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com", "alias": "my-link"}'
+
+  curl -X POST http://localhost:8082/url \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://www.google.com", "alias": "test"}'
+
+  curl -i http://localhost:8082/test
