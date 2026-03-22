@@ -25,6 +25,7 @@ func New(log *slog.Logger, urlDeleter URLDeleter) http.HandlerFunc {
 		}
 		err := urlDeleter.DeleteURL(alias)
 		if errors.Is(err, storage.ErrURLNotFound) {
+			log.Info("delete: url already deleted or not found", "alias", alias)
 			render.JSON(w, r, resp.Error("url not found"))
 			return
 		}
