@@ -7,12 +7,13 @@ import (
 
 	"shortener/internal/lib/logger/sl"
 
+	"errors"
+	"shortener/internal/lib/random"
+	"shortener/internal/storage"
+
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
-	"shortener/internal/lib/random"
-	"errors"
-	"shortener/internal/storage"
 )
 
 type Request struct {
@@ -27,7 +28,7 @@ type Response struct {
 
 // TODO: move to config if needed
 const (
-	aliasLength  = 6
+	aliasLength     = 6
 	maxAliasRetries = 10
 )
 
@@ -47,19 +48,19 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 
 		var req Request
 		err := render.DecodeJSON(r.Body, &req)
-		if err!= nil{
+		if err != nil {
 			log.Error("failed to decode request body", sl.Err(err))
-			render.JSON(w,r,resp.Error("failed to decode request"))
+			render.JSON(w, r, resp.Error("failed to decode request"))
 
 			return
 		}
 
 		log.Info("request body decoded", slog.Any("request", req))
 
-		if err:= validator.New().Struct(req); err!= nil{
-			validateErr:= err.(validator.ValidationErrors)
+		if err := validator.New().Struct(req); err != nil {
+			validateErr := err.(validator.ValidationErrors)
 			log.Error("invalid request", sl.Err(err))
-			render.JSON(w,r,resp.ValidationError(validateErr))
+			render.JSON(w, r, resp.ValidationError(validateErr))
 
 			return
 		}
@@ -87,17 +88,25 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 			}
 		}
 
-		id, err:=urlSaver.SaveURL(req.URL, alias)
-		if errors.Is(err, storage.ErrURLExists){
+		id, err := urlSaver.SaveURL(req.URL, alias)
+		if errors.Is(err, storage.ErrURLExists) {
 			log.Info("url already exists", slog.String("url", req.URL))
-			render.JSON(w,r,resp.Error("url already exists"))
+			render.JSON(w, r, resp.Error("url already exists"))
 			return
 		}
-		if err!= nil{
+		if err != nil {
 			log.Error("failed to save url", sl.Err(err))
-			render.JSON(w,r,resp.Error("failed to save url"))
+			render.JSON(w, r, resp.Error("failed to save url"))
 			return
 		}
 		log.Info("url saved", slog.String("url", req.URL))
+		log.Info("url added",slog.Int64("id", id))
+		render.JSON(w, r, Response{
+			Response: resp.Response{
+				Status: resp.StatusOK,
+			},
+			Alias: alias,
+		})
+		return
 	}
 }
