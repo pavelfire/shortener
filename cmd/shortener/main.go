@@ -13,9 +13,11 @@ import (
 
 	"shortener/internal/http-server/handlers/url/save"
 
+	"shortener/internal/http-server/handlers/delete"
+	"shortener/internal/http-server/handlers/redirect"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"shortener/internal/http-server/handlers/redirect"
 )
 
 const (
@@ -47,6 +49,7 @@ func main() {
 
 	router.Post("/url", save.New(log, storage))
 	router.Get("/{alias}", redirect.New(log, storage))
+	router.Delete("/{alias}", delete.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.HTTPServer.Address))
 
