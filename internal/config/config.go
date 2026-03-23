@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"time"
+
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -25,6 +26,8 @@ func MustLoad() *Config {
 	configPath := os.Getenv("CONFIG_PATH") // --config ./path/to/config.yaml
 	if configPath == "" {
 		log.Fatal("CONFIG_PATH is not set")
+		// if you see this error run command below
+		// export CONFIG_PATH=./config/local.yaml
 	}
 
 	// check if file exists
