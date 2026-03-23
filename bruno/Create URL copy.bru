@@ -1,0 +1,23 @@
+meta {
+  name: Create URL copy
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/url/url
+  body: json
+  auth: basic
+}
+
+auth:basic {
+  username: {{authUser}}
+  password: {{authPass}}
+}
+
+body:json {
+  {
+    "url": "https://www.google.com",
+    "alias": "test5"
+  }
+}

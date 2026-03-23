@@ -35,3 +35,7 @@ curl -X POST http://localhost:8082/url/url \
 
   curl -X DELETE -v http://localhost:8082/url/test \
   -u "myuser:mypass"
+
+## Bruno
+
+Коллекция в папке `bruno/` — открыть в Bruno через **File → Open Collection** (указать папку `bruno`). В коллекции отключён прокси (`proxy.use: false`), чтобы запросы к localhost не шли через прокси и не давали ECONNREFUSED 127.0.0.1:443. Выбери окружение **local** для переменных baseUrl, authUser, authPass.

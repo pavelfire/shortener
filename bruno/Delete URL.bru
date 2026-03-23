@@ -1,0 +1,15 @@
+meta {
+  name: Delete URL
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/url/test
+  auth: basic
+}
+
+auth:basic {
+  username: {{authUser}}
+  password: {{authPass}}
+}

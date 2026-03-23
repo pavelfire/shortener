@@ -1,0 +1,22 @@
+meta {
+  name: Create URL (no alias)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/url/url
+  body: json
+  auth: basic
+}
+
+auth:basic {
+  username: {{authUser}}
+  password: {{authPass}}
+}
+
+body:json {
+  {
+    "url": "https://example.com"
+  }
+}

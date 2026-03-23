@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Shortener API",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"],
+  "proxy": {
+    "use": false
+  }
+}
