@@ -18,17 +18,20 @@ go get github.com/go-playground/validator/v10
 
 go mod tidy
 
-curl -X POST http://localhost:8082/url \
+curl -X POST http://localhost:8082/url/url \
+  -u "myuser:mypass" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com"}'
 
 
 // this three is enought
 
-  curl -X POST http://localhost:8082/url \
+  curl -X POST http://localhost:8082/url/url \
+  -u "myuser:mypass" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://www.google.com", "alias": "test"}'
 
   curl -i http://localhost:8082/test
 
-  curl -X DELETE -v http://localhost:8082/test
+  curl -X DELETE -v http://localhost:8082/url/test \
+  -u "myuser:mypass"
