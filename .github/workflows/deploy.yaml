@@ -1,0 +1,76 @@
+name: Deploy Shortener
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The tag to deploy"
+        required: true
+        default: "latest"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HOST: root@92.246.139.169
+      DEPLOOY_DIRECTORY: /root/apps/shortener
+      CONFIG_PATH: /root/apps/shortener/config/prod.yaml
+      ENV_FILE_PATH: /root/apps/shortener/config.env
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.tag }}
+      - name: Check if tag exists
+        run: |
+          git fetch --all --tags
+          if ! git tag | grep -q "^${{github.event.inputs.tag}}$"; then
+            echo "error: Tag ${{github.event.inputs.tag}} does not exist"
+            exit 1
+          fi
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.25.0
+      - name: Install dependencies
+        run: |
+          go mod download
+      - name: Build
+        run: |
+          go build -o shortener cmd/shortener/main.go
+      - name: Deploy to VM
+        run: |
+          sudo apt-get install -y ssh rsync
+          echo "$DEPLOY_SSH_KEY" > deploy_key.pem
+          chmod 600 deploy_key.pem
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "mkdir -p ${{ env.DEPLOOY_DIRECTORY }}"
+          rsync -avz -e 'ssh -i deploy_key.pem -o StrictHostKeyChecking=no' --exclude='.git' ./ ${{ env.HOST }}:${{ env.DEPLOOY_DIRECTORY }}
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      - name: Remove old systemd service file
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "rm -f /etc/systemd/system/shortener.service"
+      - name: List workspace contents
+        run: |
+          echo "Listing deployment folder contents:"
+          ls -la ${{ github.workspace }}/deployment
+      - name: Create environment file on server
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "echo 'CONFIG_PATH=${{ env.CONFIG_PATH }}' > ${{ env.DEPLOOY_DIRECTORY }}/config.env"
+          touch ${{ env.ENV_FILE_PATH }} && \
+          chmod 600 ${{ env.ENV_FILE_PATH }} && \
+          echo 'CONFIG_PATH=${{ env.CONFIG_PATH }}' > ${{ env.ENV_FILE_PATH }} && \
+          echo 'HTTP_SERVER_PASSWORD=${{ secrets.AUTH_PASS }}' >> ${{ env.ENV_FILE_PATH }} 
+      - name: Copy systemd service file to server
+        run: |
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no ${{ github.workspace }}/deployment/shortener.service ${{ env.HOST }}:/etc/systemd/system/shortener.service
+      - name: Reload systemd
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "systemctl daemon-reload"
+      - name: Start service
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "systemctl start shortener"
+      - name: Enable service
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "systemctl enable shortener"
