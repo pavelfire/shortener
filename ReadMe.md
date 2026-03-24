@@ -39,3 +39,8 @@ curl -X POST http://localhost:8082/url/url \
 ## Bruno
 
 Коллекция в папке `bruno/` — открыть в Bruno через **File → Open Collection** (указать папку `bruno`). В коллекции отключён прокси (`proxy.use: false`), чтобы запросы к localhost не шли через прокси и не давали ECONNREFUSED 127.0.0.1:443. Выбери окружение **local** для переменных baseUrl, authUser, authPass.
+
+ssh-keygen -t rsa -b 4096 -C "when shortener"
+/Users/pvdo/.ssh/shortener_deploy_wf
+
+cat /Users/pvdo/.ssh/shortener_deploy_wf.pub
